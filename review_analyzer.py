@@ -60,13 +60,12 @@ class ReviewAnalyzer:
         prompt = f"""
         Here is a review of a product. Respond with comma delimited tags that describe the product in the format "tag1,tag2,tag3,...". 
         Do not use adjectives or descriptions. Only include the tags in your response, and end the tags with a non-alphanumeric character that is not a comma. The review text is wrapped in <review> tags.
-        <review>{review_text}</review>
+        <review>{re.sub(r'[^a-zA-Z0-9\s]', '', review_text)}</review>
         
         Tags: """
 
         res = self.llm(prompt, **self.generation_kwargs)
         output = res["choices"][0]["text"].strip()
-        print(output)
 
         # Find the index of the first non-alphanumeric character that is not a comma
         end_index = None
