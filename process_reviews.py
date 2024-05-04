@@ -10,37 +10,49 @@ def get_latest_json_file(folder_path):
     if not json_files:
         return None
     latest_file = max(json_files, key=lambda f: os.path.getmtime(os.path.join(folder_path, f)))
-    return os.path.join(folder_path, latest_file)
+    return latest_file
 
 def process_reviews(min_length=200):
     analyzer = ReviewAnalyzer()
     processed_reviews = []
 
-    # Get the latest JSON file from the "data" folder
-    data_folder = 'data'
+    # Find latest json file to process.
+    data_folder = 'raw_reviews'
     latest_json_file = get_latest_json_file(data_folder)
     if not latest_json_file:
-        print("No JSON files found in the 'data' folder.")
+        print(f"No JSON files found in the '{data_folder}' folder.")
         return []
 
-    # Read reviews from the latest JSON file
-    with open(latest_json_file, 'r') as file:
+    with open(os.path.join(data_folder, latest_json_file), 'r') as file:
         reviews_data = json.load(file)
 
-    reviews = reviews_data['reviews']
+    # Object structure is list -> [0] -> reviews dict
+    reviews = reviews_data[0]['reviews']
 
+    # Review ID is stored twice (same as 'recommendationId' in the review structure)
     for review_id, review in reviews.items():
         review_text = review['review']
 
-        # Filter reviews based on length
+        # Skip reviews that are too short
         if len(review_text) < min_length:
             continue
 
-        sentiment_score = analyzer.get_sentiment_score(review_text)
-        quality_score = analyzer.get_quality_score(review_text)
-        tags = analyzer.get_tags(review_text)
+        try:
+            # Tags has the longest instruct input, try it first
+            tags = analyzer.get_tags(review_text)
+            sentiment_score = analyzer.get_sentiment_score(review_text)
+            quality_score = analyzer.get_quality_score(review_text)
 
-        # Convert timestamps to datetime objects
+            # Throw away any review where the LLM cannot generate a result (not common)
+            if sentiment_score is None or quality_score is None or tags is None:
+                print(f"Skipping review {review_id} due to missing analysis results.")
+                continue
+
+        # Review text can be greater than context length
+        except ValueError as e:
+            print(f"Skipping review {review_id} due to error: {str(e)}")
+            continue
+
         timestamp_created = datetime.fromtimestamp(review['timestamp_created'])
         timestamp_updated = datetime.fromtimestamp(review['timestamp_updated'])
         last_played = datetime.fromtimestamp(review['author']['last_played'])
@@ -74,29 +86,23 @@ def process_reviews(min_length=200):
         }
 
         processed_reviews.append(processed_review)
-
-    return processed_reviews
-
-def main():
-    min_length = 200  # Minimum length of reviews to consider
-
-    # Process the reviews using the LLM
-    processed_reviews = process_reviews(min_length)
-
-    # Create the "reviews" folder if it doesn't exist
-    reviews_folder = 'reviews'
+    
+    reviews_folder = 'processed_reviews'
     os.makedirs(reviews_folder, exist_ok=True)
 
-    # Generate a filename for the processed reviews JSON file
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = f'processed_reviews_{timestamp}.json'
     file_path = os.path.join(reviews_folder, filename)
 
-    # Save the processed reviews in a JSON file
     with open(file_path, 'w') as file:
         json.dump(processed_reviews, file, indent=4, default=str)
 
-    print(f"Processed {len(processed_reviews)} reviews. Saved to {file_path}.")
+    return processed_reviews
+
+def main():
+    processed_reviews = process_reviews()
+
+    print(f"Processed {len(processed_reviews)} reviews. Saved to processed_reviews folder.")
 
 if __name__ == '__main__':
     main()

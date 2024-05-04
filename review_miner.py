@@ -25,7 +25,7 @@ def collect_reviews(app_id, num_reviews=100, day_range=28, save_json=True):
         script_dir = os.path.dirname(os.path.abspath(__file__))
         
         # Create the "data" folder if it doesn't exist
-        data_dir = os.path.join(script_dir, 'data')
+        data_dir = os.path.join(script_dir, 'raw_reviews')
         os.makedirs(data_dir, exist_ok=True)
         
         # Generate a timestamp for the filename
@@ -37,14 +37,14 @@ def collect_reviews(app_id, num_reviews=100, day_range=28, save_json=True):
         with open(json_filepath, 'w') as file:
             json.dump(reviews, file, indent=4)
         
-        print(f"Collected {len(reviews)} reviews for app ID {app_id}. Saved to {json_filepath}.")
+        print(f"Collected reviews for app ID {app_id}. Saved to {json_filepath}.")
     else:
         # Return the collected reviews as a list
         return reviews
 
 def main():
     # Set the app ID for which you want to collect reviews
-    app_id = 1172470  # Apex Legends
+    app_id = 553850  # Helldivers 2
 
     # Set the number of reviews to collect
     num_reviews = 1000
