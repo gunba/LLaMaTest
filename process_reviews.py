@@ -15,21 +15,21 @@ def get_latest_json_file(folder_path):
 def process_reviews(min_length=200):
     analyzer = ReviewAnalyzer()
     processed_reviews = []
-
+    
     # Find latest json file to process.
     data_folder = 'raw_reviews'
     latest_json_file = get_latest_json_file(data_folder)
     if not latest_json_file:
         print(f"No JSON files found in the '{data_folder}' folder.")
         return []
-
+    
     with open(os.path.join(data_folder, latest_json_file), 'r') as file:
         reviews_data = json.load(file)
-
+    
     # Object structure is list -> [0] -> reviews dict
     reviews = reviews_data[0]['reviews']
-
-    # Review ID is stored twice (same as 'recommendationId' in the review structure)
+    
+        # Review ID is stored twice (same as 'recommendationId' in the review structure)
     for review_id, review in reviews.items():
         review_text = review['review']
 
@@ -89,11 +89,7 @@ def process_reviews(min_length=200):
     
     reviews_folder = 'processed_reviews'
     os.makedirs(reviews_folder, exist_ok=True)
-
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f'processed_reviews_{timestamp}.json'
-    file_path = os.path.join(reviews_folder, filename)
-
+    file_path = os.path.join(reviews_folder, latest_json_file)
     with open(file_path, 'w') as file:
         json.dump(processed_reviews, file, indent=4, default=str)
 
