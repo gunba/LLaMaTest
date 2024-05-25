@@ -1,3 +1,6 @@
+![vrb1](https://github.com/gunba/steam-review-analyzer/assets/11908184/73c030ae-dc47-4d76-96d6-b6e9b58000e8)
+![vrb2](https://github.com/gunba/steam-review-analyzer/assets/11908184/cb58e27e-89b3-413f-8ec0-e502b1a92c68)
+
 # Game Review Analysis with LLM, ETL, and PowerBI
 
 This project showcases the use of Large Language Models (LLM), Extract-Transform-Load (ETL) techniques, and PowerBI to analyze and visualize game reviews. The primary focus is on the game "Helldivers 2" and the impact of a review bomb on the game's reception.
